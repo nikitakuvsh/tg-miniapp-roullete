@@ -1,0 +1,218 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align: center;
+    background: #000;
+    margin: 0;
+    padding: 20px;
+    color: #fff;
+}
+
+.slider-container {
+    position: relative;
+    width: 100%;
+    margin: 30px auto;
+    overflow: hidden;
+    background: transparent;
+    /* прозрачный фон */
+}
+
+.items-slider {
+    display: flex;
+    transition: transform 2s ease-out;
+    padding: 20px 0;
+    /* отступ сверху и снизу */
+    user-select: none;
+}
+
+.item {
+    flex: 0 0 140px;
+    /* фиксированная ширина слайда */
+    margin: 0 5px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    text-align: left;
+    color: #222;
+}
+
+.item:hover {
+    transform: scale(1.05);
+}
+
+.image-container {
+    background: #fff;
+    /* белый квадратик */
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 4px 10px rgb(0 0 0 / 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.item img {
+    width: 150px;
+    height: 150px;
+    object-fit: contain;
+    border-radius: 10px;
+    background: #f9f9f9;
+    margin-bottom: 12px;
+}
+
+.item-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #c4c0c5;
+    margin-bottom: 6px;
+    min-height: 1.2em;
+    /* чтоб заголовки были ровнее */
+}
+
+.item-probability {
+    font-size: 10px;
+    color: #444344;
+    margin-bottom: 2px;
+}
+
+.indicator-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 3px;
+    background: #e74c3c;
+    /* красная линия */
+    transform: translateX(-50%);
+    z-index: 10;
+    border-radius: 2px;
+}
+
+button#spin-btn {
+    border-radius: 8px;
+    width: 90%;
+    padding: 18px 10px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #8a524d;
+    margin: 20px auto 10px;
+    border: none;
+    background: #f0f0f0;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button#spin-btn:hover {
+    background-color: #ddd;
+}
+
+/* Для результата, если надо */
+#result {
+    margin-top: 20px;
+    color: white;
+    font-size: 1.1rem;
+}
+
+.title {
+    font-weight: normal;
+    font-size: 16px;
+}
+
+.under-slider__link {
+    color: #ccc;
+    display: block;
+    font-size: 15px;
+}
+
+.item.dimmed {
+    filter: grayscale(100%) brightness(70%);
+    opacity: 0.5;
+    transition: filter 0.5s, opacity 0.5s;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.item.selected.result,
+.item.selected.result .image-container {
+    max-width: max-content;
+    margin: auto;
+}
+
+.item.selected.result .image-container {
+    margin-bottom: 10px;
+}
+
+#email-form {
+    margin-top: 10px;
+}
+
+.email-input {
+    padding: 15px 10px;
+    background-color: #acc6cc;
+    font-size: 12px;
+    border: none;
+    border-radius: 6px;
+    display: block;
+    margin: 0 auto 5px auto;
+    width: 70%;
+    color: #333;
+}
+
+.get-promo {
+    padding: 15px 10px;
+    width: 70%;
+    border: none;
+    background: linear-gradient(to right, #a7f1ff, #63a5ff);
+    color: black;
+    font-size: 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: filter 0.3s ease;
+}
+
+.loader {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #eee;
+    border-top: 5px solid #63a5ff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 40px auto;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.slider-container,
+#spin-btn {
+    display: none;
+    /* скрыты по умолчанию */
+}
+
+.btn-loader {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f12323;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    margin-right: 8px;
+    animation: spin 0.8s linear infinite;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

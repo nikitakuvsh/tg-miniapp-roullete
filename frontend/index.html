@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Рулетка товаров</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+  <h2 class="title">КРУТИ РУЛЕТКУ И ПОЛУЧАЙ ПРИЗЫ!</h2>
+  
+  <div class="slider-container">
+    <div class="indicator-line"></div>
+    <div class="items-slider" id="items-slider"></div>
+  </div>
+  
+  <div class="under-slider__container">
+    <button id="spin-btn">ПОЛУЧИТЬ ПОДАРОК</button>
+    <a href="#" class="under-slider__link">Условия розыгрыша</a>
+  </div>
+  
+  <div id="result"></div>
+  <div id="loader" class="loader"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
