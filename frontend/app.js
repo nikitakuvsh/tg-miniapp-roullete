@@ -2,6 +2,7 @@ let items = [];
 const resultDiv = document.getElementById("result");
 const spinBtn = document.getElementById("spin-btn");
 const slider = document.getElementById("items-slider");
+const BACKEND_API = window.BACKEND_API || "http://localhost:8000";
 
 async function fetchItems() {
     const loader = document.getElementById("loader");
@@ -14,7 +15,7 @@ async function fetchItems() {
     sliderContainer.style.display = "none";
     spinBtn.style.display = "none";
 
-    items = await (await fetch("http://localhost:8000/items")).json();
+    items = await (await fetch(`${BACKEND_API}/items`)).json();
 
     const imagePromises = [];
 
@@ -58,7 +59,6 @@ async function fetchItems() {
     spinBtn.disabled = false;
 
 }
-
 
 function getRandomItem() {
     const rand = Math.random();
@@ -173,7 +173,7 @@ function showResult(item) {
         e.preventDefault();
         const email = document.getElementById("email").value;
 
-        await fetch("http://localhost:8000/claim", {
+        await fetch(`${BACKEND_API}/claim`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, item_id: item.id }),
