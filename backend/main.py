@@ -97,38 +97,38 @@ async def spin(data: SpinRequest):
         )
         return {"already_spun": False, "item_id": chosen_id}
 
-# Пользователь подтверждает получение приза и оставляет email
 @app.post("/claim")
 async def claim(data: ClaimRequest):
     pool = await get_pool()
     async with pool.acquire() as conn:
         # Проверяем, что пользователь крутил рулетку
-        row = await conn.fetchrow("SELECT item_id, claimed FROM user_prizes WHERE chat_id=$1", data.chat_id)
+        row = await conn.fetchrow("SELECT item_id, claimed, promo_code, email FROM user_prizes WHERE chat_id=$1", data.chat_id)
         if not row:
-            raise HTTPException(status_code=400, detail="You have not spun the wheel yet")
-        if row["claimed"]:
-            raise HTTPException(status_code=409, detail="Prize already claimed")
+            raise HTTPException(status_code=400, detail="Вы ещё не крутили рулетку")
 
+        # Если промокод уже отправлен — просто возвращаем его, не отправляем письмо
+        if row["claimed"]:
+            return {"message": "Промокод уже отправлен", "item_name": (await conn.fetchval("SELECT name FROM items WHERE id=$1", row["item_id"])), "promo_code": row["promo_code"]}
+
+        # Если email в базе пустой или отличается — обновим (если надо)
         # Получаем имя приза
-        item_row = await conn.fetchrow("SELECT name FROM items WHERE id=$1", row["item_id"])
-        if not item_row:
-            raise HTTPException(status_code=404, detail="Item not found")
+        item_name = await conn.fetchval("SELECT name FROM items WHERE id=$1", row["item_id"])
 
         promo_code = generate_promo_code()
 
-        # Отправляем email (заглушка)
+        # Отправляем email с промокодом
         try:
-            await send_promo_code_email(data.email, promo_code, item_row["name"])
+            await send_promo_code_email(data.email, promo_code, item_name)
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Email sending failed: {e}")
+            raise HTTPException(status_code=500, detail=f"Не удалось отправить email: {e}")
 
-        # Обновляем запись пользователя с email и промокодом
+        # Обновляем запись
         await conn.execute(
             "UPDATE user_prizes SET email=$1, promo_code=$2, claimed=TRUE WHERE chat_id=$3",
             data.email, promo_code, data.chat_id
         )
 
-        return {"message": "Promo code sent to email", "item_name": item_row["name"], "promo_code": promo_code}
+        return {"message": "Промокод отправлен", "item_name": item_name, "promo_code": promo_code}
 
 # Проверка init_data из Telegram Mini App для аутентификации пользователя
 def check_auth(data: str, bot_token: str):

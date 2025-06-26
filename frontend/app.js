@@ -18,7 +18,49 @@ try {
     console.log('fail', e);
 }
 
+async function checkSpin() {
+    const resp = await fetch(`${BACKEND_API}/spin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: userId }),
+    });
+    const data = await resp.json();
 
+    if (data.already_spun) {
+        // Показываем результат с data.item_id, без возможности крутить снова
+        showResultById(data.item_id);
+        showEmailForm(); // Можно сразу показать форму ввода почты для claim
+    } else {
+        // Показываем кнопку кручения
+        showSpinButton();
+    }
+}
+
+// В claim форма отправки почты как раньше
+document.getElementById("email-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("email").value;
+
+    try {
+        const resp = await fetch(`${BACKEND_API}/claim`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ chat_id: userId, email }),
+        });
+        if (!resp.ok) {
+            const err = await resp.json();
+            throw new Error(err.detail || "Ошибка при отправке промокода");
+        }
+        const data = await resp.json();
+
+        document.getElementById("email-message").innerHTML =
+            `<p>${data.message}. Промокод: <strong>${data.promo_code}</strong> за приз <strong>${data.item_name}</strong></p>`;
+        document.getElementById("email-form").remove();
+    } catch (e) {
+        document.getElementById("email-message").innerHTML =
+            `<p style="color:red;">Ошибка: ${e.message}</p>`;
+    }
+});
 
 
 fetchItems();
