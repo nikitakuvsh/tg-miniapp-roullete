@@ -7,6 +7,10 @@ import secrets
 import string
 import random
 import asyncio
+import hmac
+import hashlib
+from urllib.parse import parse_qsl
+import time
 
 app = FastAPI()
 
@@ -100,3 +104,33 @@ async def claim(data: ClaimRequest):
             data.email, promo_code, data.chat_id
         )
         return {"message": "Promo code sent to email", "item_name": item_row["name"], "promo_code": promo_code}
+
+class InitData(BaseModel):
+    init_data: str
+
+def check_auth(data: str, bot_token: str):
+    """Парсит initData, проверяет хэш, и возвращает chat_id"""
+    parsed_data = dict(parse_qsl(data, keep_blank_values=True))
+    hash_ = parsed_data.pop('hash', None)
+    if not hash_:
+        return None
+
+    check_string = "\n".join(f"{k}={v}" for k, v in sorted(parsed_data.items()))
+    secret_key = hashlib.sha256(bot_token.encode()).digest()
+    hmac_hash = hmac.new(secret_key, check_string.encode(), hashlib.sha256).hexdigest()
+
+    if not hmac.compare_digest(hmac_hash, hash_):
+        return None
+
+    if 'user' in parsed_data:
+        import json
+        user = json.loads(parsed_data['user'])
+        return user.get('id')
+    return None
+
+@app.post("/auth")
+def auth(data: InitData):
+    chat_id = check_auth(data.init_data, BOT_TOKEN)
+    if not chat_id:
+        raise HTTPException(status_code=403, detail="Неверный initData")
+    return {"chat_id": chat_id}

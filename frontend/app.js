@@ -6,41 +6,38 @@ const BACKEND_API = window.BACKEND_API || "http://localhost:8000";
 const tg = window.Telegram?.WebApp;
 
 if (!tg) {
-  alert("Ошибка: Telegram WebApp не найден. Запустите в среде Telegram.");
+    alert("Ошибка: Telegram WebApp не найден.");
+    throw new Error("Telegram WebApp не найден");
 }
 
-const debugDiv = document.createElement('pre');
-debugDiv.style.position = 'fixed';
-debugDiv.style.bottom = '0';
-debugDiv.style.left = '0';
-debugDiv.style.right = '0';
-debugDiv.style.maxHeight = '200px';
-debugDiv.style.overflowY = 'auto';
-debugDiv.style.backgroundColor = '#eee';
-debugDiv.style.padding = '10px';
-debugDiv.style.fontSize = '12px';
-debugDiv.style.zIndex = '9999';
-document.body.appendChild(debugDiv);
+tg.ready(); // обязательно!
 
-function updateDebug() {
-  debugDiv.textContent = "tg.initDataUnsafe:\n" + JSON.stringify(tg?.initDataUnsafe, null, 2);
-}
+// Отправка initData на сервер для получения chat_id
+let chat_id = null;
 
-tg.ready();  // уведомляем Telegram, что WebApp готов
-
-// Обновим дебаг после инициализации
-updateDebug();
-
-const chat_id = tg?.initDataUnsafe?.user?.id;
-
-if (!chat_id) {
-  alert("Ошибка: не удалось получить chat_id из Telegram. Проверьте, что вы вошли в Telegram и открыли приложение через него.");
-  updateDebug();
-} else {
-  debugDiv.textContent += `\n\nПолучен chat_id: ${chat_id}`;
-}
-
-
+fetch(`${BACKEND_API}/auth`, {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+        init_data: tg.initData // именно tg.initData, не initDataUnsafe!
+    })
+})
+    .then(res => {
+        if (!res.ok) throw new Error("Сервер не вернул OK");
+        return res.json();
+    })
+    .then(data => {
+        if (!data.chat_id) throw new Error("Сервер не вернул chat_id");
+        chat_id = data.chat_id;
+        console.log("Получен chat_id с сервера:", chat_id);
+        // можно запускать fetchItems или активировать кнопку только после этого
+    })
+    .catch(err => {
+        console.error("Ошибка при получении chat_id:", err);
+        alert("Ошибка при получении chat_id: " + err.message);
+    });
 
 async function fetchItems() {
     const loader = document.getElementById("loader");
@@ -120,7 +117,7 @@ async function spin() {
     try {
         const resp = await fetch(`${BACKEND_API}/spin`, {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ chat_id }),
         });
         if (!resp.ok) throw new Error(`Ошибка сервера: ${resp.status}`);
