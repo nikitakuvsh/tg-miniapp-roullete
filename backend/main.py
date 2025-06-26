@@ -1,4 +1,3 @@
-# backend.py
 import asyncpg
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -6,16 +5,15 @@ from pydantic import BaseModel, EmailStr
 import secrets
 import string
 import random
-import asyncio
 import hmac
 import hashlib
 from urllib.parse import parse_qsl
-import time
 
 app = FastAPI()
 
 BOT_TOKEN = "8039605779:AAEm7vfc1eNRw5z9mDoPLSXa3no7W_r0Zh8"
 
+# Разрешаем кросс-доменные запросы (CORS)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,28 +22,45 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Строка подключения к PostgreSQL (твоя)
 DATABASE_URL = "postgresql://tg_miniapp_roullete_bd_user:nyilaFOrUBtbQf3ybR3jRczDNwhB04PZ@dpg-d1e7rveuk2gs73adr1p0-a.oregon-postgres.render.com:5432/tg_miniapp_roullete_bd"
 
+# Создаём пул соединений один раз при старте
+@app.on_event("startup")
+async def startup():
+    app.state.db_pool = await asyncpg.create_pool(DATABASE_URL)
+
+# Закрываем пул при завершении
+@app.on_event("shutdown")
+async def shutdown():
+    await app.state.db_pool.close()
+
 async def get_pool():
-    if not hasattr(app.state, "db_pool"):
-        app.state.db_pool = await asyncpg.create_pool(DATABASE_URL)
     return app.state.db_pool
 
+# Запрос для кручения рулетки
 class SpinRequest(BaseModel):
     chat_id: int
 
+# Запрос для подтверждения приза и отправки email
 class ClaimRequest(BaseModel):
     chat_id: int
     email: EmailStr
 
+# Запрос для аутентификации по init_data от Telegram Mini App
+class InitData(BaseModel):
+    init_data: str
+
+# Функция генерации промокода
 def generate_promo_code(length=8):
     chars = string.ascii_uppercase + string.digits
     return ''.join(secrets.choice(chars) for _ in range(length))
 
+# Заглушка для отправки email
 async def send_promo_code_email(email: str, code: str, item_name: str):
-    # Заглушка - в проде вставь свой mail sender
-    print(f"Отправка промокода {code} за {item_name} на {email}")
+    print(f"[EMAIL] Отправка промокода {code} за {item_name} на {email}")
 
+# Получить все доступные предметы
 @app.get("/items")
 async def get_items():
     pool = await get_pool()
@@ -53,79 +68,83 @@ async def get_items():
         rows = await conn.fetch("SELECT id, name, probability, price, photo_url FROM items")
         return [dict(row) for row in rows]
 
+# Крутим рулетку
 @app.post("/spin")
 async def spin(data: SpinRequest):
     pool = await get_pool()
     async with pool.acquire() as conn:
+        # Проверяем, крутил ли пользователь уже
         row = await conn.fetchrow("SELECT item_id FROM user_prizes WHERE chat_id=$1", data.chat_id)
         if row:
             return {"already_spun": True, "item_id": row["item_id"]}
 
+        # Получаем все призы
         items = await conn.fetch("SELECT id, probability FROM items")
         if not items:
-            raise HTTPException(404, "Items not found")
+            raise HTTPException(status_code=404, detail="Items not found")
 
+        # Случайный выбор приза по вероятности
         rand = random.random()
         acc = 0.0
-        chosen_id = items[-1]["id"]
+        chosen_id = items[-1]["id"]  # на всякий случай последний
         for item in items:
             acc += item["probability"]
             if rand <= acc:
                 chosen_id = item["id"]
                 break
 
+        # Записываем результат для пользователя
         await conn.execute(
             "INSERT INTO user_prizes(chat_id, item_id, claimed) VALUES ($1, $2, FALSE)",
             data.chat_id, chosen_id
         )
         return {"already_spun": False, "item_id": chosen_id}
 
+# Пользователь подтверждает получение приза и оставляет email
 @app.post("/claim")
 async def claim(data: ClaimRequest):
     pool = await get_pool()
     async with pool.acquire() as conn:
+        # Проверяем, что пользователь крутил рулетку
         row = await conn.fetchrow("SELECT item_id, claimed FROM user_prizes WHERE chat_id=$1", data.chat_id)
         if not row:
-            raise HTTPException(400, "You have not spun the wheel yet")
+            raise HTTPException(status_code=400, detail="You have not spun the wheel yet")
         if row["claimed"]:
-            raise HTTPException(409, "Prize already claimed")
+            raise HTTPException(status_code=409, detail="Prize already claimed")
 
-        item_id = row["item_id"]
-        item_row = await conn.fetchrow("SELECT name FROM items WHERE id=$1", item_id)
+        # Получаем имя приза
+        item_row = await conn.fetchrow("SELECT name FROM items WHERE id=$1", row["item_id"])
         if not item_row:
-            raise HTTPException(404, "Item not found")
+            raise HTTPException(status_code=404, detail="Item not found")
 
         promo_code = generate_promo_code()
+
+        # Отправляем email (заглушка)
         try:
             await send_promo_code_email(data.email, promo_code, item_row["name"])
         except Exception as e:
-            raise HTTPException(500, f"Email sending failed: {e}")
+            raise HTTPException(status_code=500, detail=f"Email sending failed: {e}")
 
+        # Обновляем запись пользователя с email и промокодом
         await conn.execute(
             "UPDATE user_prizes SET email=$1, promo_code=$2, claimed=TRUE WHERE chat_id=$3",
             data.email, promo_code, data.chat_id
         )
+
         return {"message": "Promo code sent to email", "item_name": item_row["name"], "promo_code": promo_code}
 
-class InitData(BaseModel):
-    init_data: str
-
+# Проверка init_data из Telegram Mini App для аутентификации пользователя
 def check_auth(data: str, bot_token: str):
-    import logging
-    logging.info(f"init_data raw: {data}")
     parsed_data = dict(parse_qsl(data, keep_blank_values=True))
     hash_ = parsed_data.pop('hash', None)
-    logging.info(f"hash from data: {hash_}")
+    if not hash_:
+        return None
 
     check_string = "\n".join(f"{k}={v}" for k, v in sorted(parsed_data.items()))
-    logging.info(f"check_string for HMAC:\n{check_string}")
-
     secret_key = hashlib.sha256(bot_token.encode()).digest()
     hmac_hash = hmac.new(secret_key, check_string.encode(), hashlib.sha256).hexdigest()
-    logging.info(f"calculated HMAC: {hmac_hash}")
 
     if not hmac.compare_digest(hmac_hash, hash_):
-        logging.info("Hashes do not match!")
         return None
 
     if 'user' in parsed_data:
@@ -133,7 +152,6 @@ def check_auth(data: str, bot_token: str):
         user = json.loads(parsed_data['user'])
         return user.get('id')
     return None
-
 
 @app.post("/auth")
 def auth(data: InitData):

@@ -12,39 +12,14 @@ if (!tg) {
 
 tg.ready(); // обязательно!
 
-// Отправка initData на сервер для получения chat_id
-let chat_id = null;
-
-fetch(`${BACKEND_API}/auth`, {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-        init_data: tg.initData // именно tg.initData, не initDataUnsafe!
-    })
-})
-    .then(res => {
-        if (!res.ok) throw new Error("Сервер не вернул OK");
-        return res.json();
-    })
-    .then(data => {
-        if (!data.chat_id) throw new Error("Сервер не вернул chat_id");
-        chat_id = data.chat_id;
-        console.log("Получен chat_id с сервера:", chat_id);
-        // можно запускать fetchItems или активировать кнопку только после этого
-    })
-    .catch(err => {
-        console.error("Ошибка при получении chat_id:", err);
-        alert("Ошибка при получении chat_id: " + err.message);
-    });
+// chat_id не получаем на фронте
+// Просто запускаем загрузку предметов сразу
+fetchItems();
 
 async function fetchItems() {
     const loader = document.getElementById("loader");
-    const spinBtn = document.getElementById("spin-btn");
     const sliderContainer = document.querySelector(".slider-container");
 
-    // Показать главный лоадер
     loader.style.display = "block";
     slider.innerHTML = "";
     sliderContainer.style.display = "none";
@@ -78,12 +53,10 @@ async function fetchItems() {
 
     await Promise.all(imagePromises);
 
-    // Прячем главный лоадер, показываем слайдер
     loader.style.display = "none";
     sliderContainer.style.display = "block";
     spinBtn.style.display = "block";
 
-    // Показываем лоадер внутри кнопки на 5 сек
     const originalBtnContent = spinBtn.innerHTML;
     spinBtn.disabled = true;
     spinBtn.innerHTML = `<span class="btn-loader"></span> Загрузка...`;
@@ -92,7 +65,6 @@ async function fetchItems() {
 
     spinBtn.innerHTML = originalBtnContent;
     spinBtn.disabled = false;
-
 }
 
 function getRandomItem() {
