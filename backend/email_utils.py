@@ -12,14 +12,15 @@ async def send_promo_code_email(to_email: str, promo_code: str, item_name: str):
     msg["To"] = to_email
     msg["Subject"] = "Ваш подарок и промокод 🎁"
     msg.set_content(
-        f"Поздравляем!\n\nВы получили приз: {item_name}\nВаш уникальный промокод: {promo_code}\n\nСпасибо за участие!"
+        f"Поздравляем!\n\nВы получили приз: {item_name}\nВаш промокод: {promo_code}\n\nСпасибо за участие!"
     )
 
     await aiosmtplib.send(
-        message=msg,
+        msg,  # первым позиционным аргументом
         hostname=SMTP_HOST,
         port=SMTP_PORT,
         start_tls=True,
         username=SMTP_USER,
         password=SMTP_PASS,
     )
+
