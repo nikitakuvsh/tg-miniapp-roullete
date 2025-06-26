@@ -4,11 +4,10 @@ const spinBtn = document.getElementById("spin-btn");
 const slider = document.getElementById("items-slider");
 const BACKEND_API = window.BACKEND_API || "http://localhost:8000";
 const tg = window.Telegram?.WebApp;
+
 if (!tg) {
   alert("Ошибка: Telegram WebApp не найден. Запустите в среде Telegram.");
 }
-
-const chat_id = tg?.initDataUnsafe?.user?.id;
 
 const debugDiv = document.createElement('pre');
 debugDiv.style.position = 'fixed';
@@ -23,13 +22,22 @@ debugDiv.style.fontSize = '12px';
 debugDiv.style.zIndex = '9999';
 document.body.appendChild(debugDiv);
 
-debugDiv.textContent = "tg.initDataUnsafe:\n" + JSON.stringify(tg?.initDataUnsafe, null, 2);
+function updateDebug() {
+  debugDiv.textContent = "tg.initDataUnsafe:\n" + JSON.stringify(tg?.initDataUnsafe, null, 2);
+}
 
+tg.ready();  // уведомляем Telegram, что WebApp готов
 
+// Обновим дебаг после инициализации
+updateDebug();
+
+const chat_id = tg?.initDataUnsafe?.user?.id;
 
 if (!chat_id) {
   alert("Ошибка: не удалось получить chat_id из Telegram. Проверьте, что вы вошли в Telegram и открыли приложение через него.");
-  console.log("tg.initDataUnsafe:", tg?.initDataUnsafe);
+  updateDebug();
+} else {
+  debugDiv.textContent += `\n\nПолучен chat_id: ${chat_id}`;
 }
 
 
