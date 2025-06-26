@@ -97,7 +97,7 @@ async function spin() {
         const resp = await fetch(`${BACKEND_API}/spin`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId }),
+            body: JSON.stringify({ chat_id: userId }),
         });
         if (!resp.ok) throw new Error(`Ошибка сервера: ${resp.status}`);
 
@@ -217,7 +217,7 @@ function showResult(item) {
             const resp = await fetch(`${BACKEND_API}/claim`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ userId, email }),
+                body: JSON.stringify({ chat_id: userId, email }),
             });
             if (!resp.ok) {
                 const err = await resp.json();
