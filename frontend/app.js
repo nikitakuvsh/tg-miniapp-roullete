@@ -3,17 +3,7 @@ const resultDiv = document.getElementById("result");
 const spinBtn = document.getElementById("spin-btn");
 const slider = document.getElementById("items-slider");
 const BACKEND_API = window.BACKEND_API || "http://localhost:8000";
-const tg = window.Telegram?.WebApp;
 
-if (!tg) {
-    alert("Ошибка: Telegram WebApp не найден.");
-    throw new Error("Telegram WebApp не найден");
-}
-
-tg.ready(); // обязательно!
-
-// chat_id не получаем на фронте
-// Просто запускаем загрузку предметов сразу
 fetchItems();
 
 async function fetchItems() {
