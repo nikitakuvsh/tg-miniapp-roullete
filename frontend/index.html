@@ -27,6 +27,17 @@
     window.BACKEND_API = "https://tg-miniapp-roullete.onrender.com"; // Сюда подставить урл бека
     // window.BACKEND_API = "http://127.0.0.1:8000"
   </script>
+  <script>
+    let tg = window.Telegram.WebApp;
+  
+    let userId = tg.initDataUnsafe.user.id;
+  
+    console.log("User ID:", userId);
+  
+    // Вывести на страницу
+    document.body.insertAdjacentHTML('beforeend', `<p>Ваш Telegram ID: ${userId}</p>`);
+  </script>
+  
   <script src="app.js"></script>
 </body>
 </html>
