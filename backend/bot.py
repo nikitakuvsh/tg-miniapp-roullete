@@ -1,9 +1,9 @@
-import logging
 from aiogram import Bot, Dispatcher
 from aiogram.filters import Command
 from aiogram.types import Message, WebAppInfo, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.exceptions import TelegramAPIError
 import httpx
+import logging
 
 TELEGRAM_BOT_TOKEN = "8039605779:AAEm7vfc1eNRw5z9mDoPLSXa3no7W_r0Zh8"
 WEB_APP_URL = "https://tg-miniapp-roullete.netlify.app/"
@@ -33,16 +33,15 @@ async def cmd_start(message: Message):
 
 @dp.message()
 async def handle_message(message: Message):
-    chat_id = message.chat.id
+    chat_id = message.chat.id  # Вот тут ты просто берёшь chat_id из сообщения — всё просто и понятно
 
-    # Каждый любой текст - делаем spin
     async with httpx.AsyncClient() as client:
         try:
             resp = await client.post(f"{BACKEND_API}/spin", json={"chat_id": chat_id})
             resp.raise_for_status()
             data = resp.json()
 
-            if data["already_spun"]:
+            if data.get("already_spun"):
                 await message.answer(f"Вы уже крутили рулетку и выиграли предмет с ID {data['item_id']}.")
             else:
                 await message.answer(f"Вы крутите рулетку... Ваш приз - предмет с ID {data['item_id']}.")
