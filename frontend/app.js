@@ -5,13 +5,20 @@ const slider = document.getElementById("items-slider");
 const BACKEND_API = window.BACKEND_API || "http://localhost:8000";
 
 let tg = window.Telegram.WebApp;
-  
-let userId = tg.initDataUnsafe.user.id;
 
-console.log("User ID:", userId);
+try {
+    let userId = tg.initDataUnsafe.user.id;
+    if (userId){
+        console.log("User ID:", userId);
+    
+        // Вывести на страницу
+        document.body.insertAdjacentHTML('beforeend', `<p>Ваш Telegram ID: ${userId}</p>`);
+    }
+} catch {
+    console.log('fail');
+}
 
-// Вывести на страницу
-document.body.insertAdjacentHTML('beforeend', `<p>Ваш Telegram ID: ${userId}</p>`);
+
 
 fetchItems();
 
