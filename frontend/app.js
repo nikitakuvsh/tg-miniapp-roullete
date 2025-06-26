@@ -3,12 +3,18 @@ const resultDiv = document.getElementById("result");
 const spinBtn = document.getElementById("spin-btn");
 const slider = document.getElementById("items-slider");
 const BACKEND_API = window.BACKEND_API || "http://localhost:8000";
-const tg = window.Telegram.WebApp;
-const chat_id = tg.initDataUnsafe?.user?.id;
+const tg = window.Telegram?.WebApp;
+if (!tg) {
+  alert("Ошибка: Telegram WebApp не найден. Запустите в среде Telegram.");
+}
+
+const chat_id = tg?.initDataUnsafe?.user?.id;
 
 if (!chat_id) {
-  alert("Ошибка: не удалось получить chat_id из Telegram");
+  alert("Ошибка: не удалось получить chat_id из Telegram. Проверьте, что вы вошли в Telegram и открыли приложение через него.");
+  console.log("tg.initDataUnsafe:", tg?.initDataUnsafe);
 }
+
 
 
 async function fetchItems() {
