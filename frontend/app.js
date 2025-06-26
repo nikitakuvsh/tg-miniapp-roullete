@@ -10,6 +10,23 @@ if (!tg) {
 
 const chat_id = tg?.initDataUnsafe?.user?.id;
 
+const debugDiv = document.createElement('pre');
+debugDiv.style.position = 'fixed';
+debugDiv.style.bottom = '0';
+debugDiv.style.left = '0';
+debugDiv.style.right = '0';
+debugDiv.style.maxHeight = '200px';
+debugDiv.style.overflowY = 'auto';
+debugDiv.style.backgroundColor = '#eee';
+debugDiv.style.padding = '10px';
+debugDiv.style.fontSize = '12px';
+debugDiv.style.zIndex = '9999';
+document.body.appendChild(debugDiv);
+
+debugDiv.textContent = "tg.initDataUnsafe:\n" + JSON.stringify(tg?.initDataUnsafe, null, 2);
+
+
+
 if (!chat_id) {
   alert("Ошибка: не удалось получить chat_id из Telegram. Проверьте, что вы вошли в Telegram и открыли приложение через него.");
   console.log("tg.initDataUnsafe:", tg?.initDataUnsafe);
