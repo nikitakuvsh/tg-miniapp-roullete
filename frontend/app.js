@@ -6,12 +6,12 @@ const BACKEND_API = window.BACKEND_API || "http://localhost:8000";
 
 let tg = window.Telegram.WebApp;
   
-    let userId = tg.initDataUnsafe.user.id;
-  
-    console.log("User ID:", userId);
-  
-    // Вывести на страницу
-    document.body.insertAdjacentHTML('beforeend', `<p>Ваш Telegram ID: ${userId}</p>`);
+let userId = tg.initDataUnsafe.user.id;
+
+console.log("User ID:", userId);
+
+// Вывести на страницу
+document.body.insertAdjacentHTML('beforeend', `<p>Ваш Telegram ID: ${userId}</p>`);
 
 fetchItems();
 
@@ -89,7 +89,7 @@ async function spin() {
         const resp = await fetch(`${BACKEND_API}/spin`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ chat_id }),
+            body: JSON.stringify({ userId }),
         });
         if (!resp.ok) throw new Error(`Ошибка сервера: ${resp.status}`);
 
@@ -208,7 +208,7 @@ function showResult(item) {
             const resp = await fetch(`${BACKEND_API}/claim`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ chat_id, email }),
+                body: JSON.stringify({ userId, email }),
             });
             if (!resp.ok) {
                 const err = await resp.json();
@@ -227,4 +227,3 @@ function showResult(item) {
 }
 
 spinBtn.addEventListener("click", spin);
-fetchItems();
