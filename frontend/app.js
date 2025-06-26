@@ -76,6 +76,9 @@ function spin() {
     if (isSpinning) return;
     isSpinning = true;
 
+    spinBtn.disabled = true;
+    spinBtn.classList.add("disabled");
+
     const selectedItem = getRandomItem();
     const index = items.findIndex(i => i.id === selectedItem.id);
 
@@ -119,9 +122,9 @@ function spin() {
         slider.style.transform = `translateX(-${offset}px)`;
     });
 
-    slider.addEventListener("transitionend", function handler() {
+    slider.addEventListener("transitionend", async function handler() {
         slider.removeEventListener("transitionend", handler);
-
+    
         allItemElements.forEach((el, i) => {
             if (i === finalIndex) {
                 el.classList.add("selected");
@@ -129,10 +132,13 @@ function spin() {
                 el.classList.add("dimmed");
             }
         });
-
+    
+        // Ждём 2 секунды перед показом результата
+        await new Promise(resolve => setTimeout(resolve, 2000));
+    
         showResult(selectedItem);
         isSpinning = false;
-    });
+    });    
 }
 
 function showResult(item) {
