@@ -5,18 +5,19 @@ const slider = document.getElementById("items-slider");
 const BACKEND_API = window.BACKEND_API || "http://localhost:8000";
 
 let tg = window.Telegram.WebApp;
+tg.ready();
+let userId = null;
 
 try {
-    let userId = tg.initDataUnsafe.user.id;
-    if (userId){
+    userId = tg.initDataUnsafe.user.id;
+    if (userId) {
         console.log("User ID:", userId);
-    
-        // Вывести на страницу
         document.body.insertAdjacentHTML('beforeend', `<p>Ваш Telegram ID: ${userId}</p>`);
     }
-} catch {
-    console.log('fail');
+} catch (e) {
+    console.log('fail', e);
 }
+
 
 
 
@@ -51,7 +52,6 @@ async function fetchItems() {
           <img src="${item.photo_url}" alt="${item.name}" />
         </div>
         <div class="item-name">${item.name.toUpperCase()}</div>
-        <div class="item-name>${userId}</div>
         <div class="item-probability">Вероятность получения — ${(item.probability * 100).toFixed(1)}%</div>
       `;
 
@@ -130,6 +130,7 @@ async function spin() {
                         <img src="${item.photo_url}" alt="${item.name}" />
                     </div>
                     <div class="item-name">${item.name.toUpperCase()}</div>
+                    <div class="item-name">${userId}</div>
                     <div class="item-probability">Вероятность получения — ${(item.probability * 100).toFixed(1)}%</div>
                 `;
                 slider.appendChild(div);
