@@ -7,7 +7,7 @@ import httpx
 
 TELEGRAM_BOT_TOKEN = "8039605779:AAEm7vfc1eNRw5z9mDoPLSXa3no7W_r0Zh8"
 WEB_APP_URL = "https://tg-miniapp-roullete.netlify.app/"
-BACKEND_API = "http://localhost:8000"  # поменяй, если надо
+BACKEND_API = "https://tg-miniapp-roullete.onrender.com"
 
 logging.basicConfig(level=logging.INFO)
 
