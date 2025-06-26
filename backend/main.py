@@ -14,6 +14,8 @@ import time
 
 app = FastAPI()
 
+BOT_TOKEN = "8039605779:AAEm7vfc1eNRw5z9mDoPLSXa3no7W_r0Zh8"
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
