@@ -18,6 +18,8 @@ try {
     console.log('fail', e);
 }
 
+checkSpin();
+
 async function checkSpin() {
     const resp = await fetch(`${BACKEND_API}/spin`, {
         method: "POST",
