@@ -8,6 +8,7 @@ import random
 import hmac
 import hashlib
 from urllib.parse import parse_qsl
+from email_utils import send_promo_code_email
 
 app = FastAPI()
 
@@ -55,10 +56,6 @@ class InitData(BaseModel):
 def generate_promo_code(length=8):
     chars = string.ascii_uppercase + string.digits
     return ''.join(secrets.choice(chars) for _ in range(length))
-
-# Заглушка для отправки email
-async def send_promo_code_email(email: str, code: str, item_name: str):
-    print(f"[EMAIL] Отправка промокода {code} за {item_name} на {email}")
 
 # Получить все доступные предметы
 @app.get("/items")
