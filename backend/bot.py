@@ -18,34 +18,28 @@ logging.basicConfig(level=logging.INFO)
 bot = Bot(token=TELEGRAM_BOT_TOKEN)
 dp = Dispatcher()
 
-CHANNEL_USERNAME = "@laifenrussia"
+# CHANNEL_USERNAME = "@laifenrussia"
 
-async def is_user_subscribed(user_id: int) -> bool:
-    try:
-        member: ChatMember = await bot.get_chat_member(chat_id=CHANNEL_USERNAME, user_id=user_id)
-        return member.status in ["member", "administrator", "creator"]
-    except TelegramAPIError as e:
-        logging.warning(f"Ошибка проверки подписки: {e}")
-        return False
+# async def is_user_subscribed(user_id: int) -> bool:
+#     try:
+#         member: ChatMember = await bot.get_chat_member(chat_id=CHANNEL_USERNAME, user_id=user_id)
+#         return member.status in ["member", "administrator", "creator"]
+#     except TelegramAPIError as e:
+#         logging.warning(f"Ошибка проверки подписки: {e}")
+#         return False
 
 @dp.message(Command(commands=["start"]))
 async def cmd_start(message: Message):
     user_id = message.from_user.id
 
-    if not await is_user_subscribed(user_id):
-        await message.answer("Чтобы играть в рулетку, подпишитесь на наш канал: https://t.me/laifenrussia и снова нажмите /start")
-        return
+    # if not await is_user_subscribed(user_id):
+    #     await message.answer("Чтобы играть в рулетку, подпишитесь на наш канал: https://t.me/laifenrussia и снова нажмите /start")
+    #     return
 
     try:
         await message.answer("Привет! Открой мини-приложение через 📎 в меню.")
     except TelegramAPIError as e:
         logging.error(f"Ошибка при отправке сообщения: {e}")
-
-
-@dp.message()
-async def handle_message(message: Message):
-    chat_id = message.chat.id
-    await message.answer(f"Ваш chat_id: {chat_id}")
 
 async def on_startup():
     try:
