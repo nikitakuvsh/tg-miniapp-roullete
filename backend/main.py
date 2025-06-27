@@ -136,29 +136,6 @@ async def claim(data: ClaimRequest):
 
         return {"message": "Промокод отправлен", "item_name": item_name, "promo_code": promo_code}
 
-# Проверка init_data из Telegram Mini App для аутентификации пользователя
-def check_auth(data: str, bot_token: str):
-    parsed_data = dict(parse_qsl(data, keep_blank_values=True))
-    hash_ = parsed_data.pop('hash', None)
-    if not hash_:
-        return None
-
-    check_string = "\n".join(f"{k}={v}" for k, v in sorted(parsed_data.items()))
-    secret_key = hashlib.sha256(bot_token.encode()).digest()
-    hmac_hash = hmac.new(secret_key, check_string.encode(), hashlib.sha256).hexdigest()
-
-    if not hmac.compare_digest(hmac_hash, hash_):
-        return None
-
-    if 'user' in parsed_data:
-        import json
-        user = json.loads(parsed_data['user'])
-        return user.get('id')
-    return None
-
-@app.post("/auth")
-def auth(data: InitData):
-    chat_id = check_auth(data.init_data, BOT_TOKEN)
-    if not chat_id:
-        raise HTTPException(status_code=403, detail="Неверный initData")
-    return {"chat_id": chat_id}
+@app.get("/ping")
+def ping():
+    return {"status": "ok", "message": "Server is alive"}

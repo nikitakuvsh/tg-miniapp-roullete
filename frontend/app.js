@@ -10,10 +10,6 @@ let userId = null;
 
 try {
     userId = tg.initDataUnsafe.user.id;
-    if (userId) {
-        console.log("User ID:", userId);
-        document.body.insertAdjacentHTML('beforeend', `<p>Ваш Telegram ID: ${userId}</p>`);
-    }
 } catch (e) {
     console.log('fail', e);
 }
@@ -155,7 +151,6 @@ async function spin() {
                         <img src="${item.photo_url}" alt="${item.name}" />
                     </div>
                     <div class="item-name">${item.name.toUpperCase()}</div>
-                    <div class="item-name">${userId}</div>
                     <div class="item-probability">Вероятность получения — ${(item.probability * 100).toFixed(1)}%</div>
                 `;
                 slider.appendChild(div);
@@ -251,7 +246,7 @@ function showResult(item) {
             const data = await resp.json();
 
             document.getElementById("email-message").innerHTML =
-                `<p>Промокод будет выслан на <strong>${email}</strong></p>`;
+                `<p style="margin-top: 5px">Промокод успешно выслан на <strong>${email}</strong></p>`;
             document.getElementById("email-form").remove();
         } catch (e) {
             document.getElementById("email-message").innerHTML =
