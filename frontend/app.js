@@ -46,8 +46,6 @@ async function checkSpin() {
     }
 }
 
-
-
 fetchItems();
 
 async function fetchItems() {

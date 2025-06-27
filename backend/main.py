@@ -101,32 +101,38 @@ async def spin(data: SpinRequest):
 async def claim(data: ClaimRequest):
     pool = await get_pool()
     async with pool.acquire() as conn:
-        # Проверяем, что пользователь крутил рулетку
-        row = await conn.fetchrow("SELECT item_id, claimed, promo_code, email FROM user_prizes WHERE chat_id=$1", data.chat_id)
+        row = await conn.fetchrow(
+            "SELECT item_id, claimed, promo_code, email FROM user_prizes WHERE chat_id=$1", data.chat_id
+        )
         if not row:
             raise HTTPException(status_code=400, detail="Вы ещё не крутили рулетку")
 
-        # Если промокод уже отправлен — просто возвращаем его, не отправляем письмо
-        if row["claimed"]:
-            return {"message": "Промокод уже отправлен", "item_name": (await conn.fetchval("SELECT name FROM items WHERE id=$1", row["item_id"])), "promo_code": row["promo_code"]}
-
-        # Если email в базе пустой или отличается — обновим (если надо)
-        # Получаем имя приза
         item_name = await conn.fetchval("SELECT name FROM items WHERE id=$1", row["item_id"])
+        if not item_name:
+            raise HTTPException(status_code=404, detail="Приз не найден")
 
-        promo_code = generate_promo_code()
+        promo_code = row["promo_code"]
 
-        # Отправляем email с промокодом
+        # Если промокод ещё не создан — создаём новый и обновляем базу
+        if not row["claimed"] or not promo_code:
+            promo_code = generate_promo_code()
+            await conn.execute(
+                "UPDATE user_prizes SET email=$1, promo_code=$2, claimed=TRUE WHERE chat_id=$3",
+                data.email, promo_code, data.chat_id
+            )
+        else:
+            # Обновим email, если он отличается (чтобы отправлять на актуальный)
+            if data.email != row["email"]:
+                await conn.execute(
+                    "UPDATE user_prizes SET email=$1 WHERE chat_id=$2",
+                    data.email, data.chat_id
+                )
+
+        # Отправляем промокод по почте (в любом случае)
         try:
             await send_promo_code_email(data.email, promo_code, item_name)
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Не удалось отправить email: {e}")
-
-        # Обновляем запись
-        await conn.execute(
-            "UPDATE user_prizes SET email=$1, promo_code=$2, claimed=TRUE WHERE chat_id=$3",
-            data.email, promo_code, data.chat_id
-        )
 
         return {"message": "Промокод отправлен", "item_name": item_name, "promo_code": promo_code}
 
