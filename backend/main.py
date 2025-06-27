@@ -70,11 +70,11 @@ async def get_items():
 async def has_spun(chat_id: int):
     pool = await get_pool()
     async with pool.acquire() as conn:
-        row = await conn.fetchrow("SELECT item_id FROM user_prizes WHERE chat_id = $1", chat_id)
+        row = await conn.fetchrow("SELECT item_id FROM spins WHERE chat_id = $1", chat_id)
         if row:
             return {"already_spun": True, "item_id": row["item_id"]}
         return {"already_spun": False}
-
+    
 # Крутим рулетку
 @app.post("/spin")
 async def spin(data: SpinRequest):
