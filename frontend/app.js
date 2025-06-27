@@ -37,9 +37,6 @@ async function checkSpin() {
     }
 }
 
-
-fetchItems();
-
 async function fetchItems() {
     const loader = document.getElementById("loader");
     const sliderContainer = document.querySelector(".slider-container");
