@@ -27,20 +27,16 @@ function showResultById(item_id) {
 checkSpin();
 
 async function checkSpin() {
-    const resp = await fetch(`${BACKEND_API}/spin`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chat_id: userId }),
-    });
+    const resp = await fetch(`${BACKEND_API}/has_spun?chat_id=${userId}`);
     const data = await resp.json();
 
     if (data.already_spun) {
-        // Показываем результат с data.item_id, без возможности крутить снова
         showResultById(data.item_id);
     } else {
         fetchItems();
     }
 }
+
 
 fetchItems();
 

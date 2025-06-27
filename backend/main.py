@@ -64,6 +64,16 @@ async def get_items():
     async with pool.acquire() as conn:
         rows = await conn.fetch("SELECT id, name, probability, price, photo_url FROM items")
         return [dict(row) for row in rows]
+    
+#Проверка крутил ли уже пользователь или нет    
+@app.get("/has_spun")
+async def has_spun(chat_id: int):
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow("SELECT item_id FROM spins WHERE chat_id = $1", chat_id)
+        if row:
+            return {"already_spun": True, "item_id": row["item_id"]}
+        return {"already_spun": False}
 
 # Крутим рулетку
 @app.post("/spin")
