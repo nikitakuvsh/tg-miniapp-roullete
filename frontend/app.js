@@ -108,6 +108,7 @@ async function spin() {
     spinBtn.classList.add("disabled");
 
     try {
+        // Получаем результат спина с сервера
         const resp = await fetch(`${BACKEND_API}/spin`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -117,24 +118,16 @@ async function spin() {
 
         const data = await resp.json();
 
-        // Найти предмет в items по item_id из backend
+        // Ищем выбранный предмет в полном списке (включая с quantity=0)
         let selectedItem = items.find(i => i.id === data.item_id);
 
-        // Если предмет не найден или quantity = 0 — выбрать первый доступный вручную   
-        if (!selectedItem) throw new Error("Нет доступных призов");
+        // Если вдруг не нашли, для безопасности — берём первый предмет
+        if (!selectedItem) selectedItem = items[0];
 
-        // Здесь запускаем анимацию прокрутки, как у тебя было, с selectedItem и index
-        // Копируем твою анимацию:
+        // Индекс выбранного предмета в полном списке (важно!)
         const index = items.findIndex(i => i.id === selectedItem.id);
 
-        const itemElements = slider.querySelectorAll(".item");
-        const itemWidth = itemElements[0].offsetWidth +
-            parseInt(getComputedStyle(itemElements[0]).marginLeft) +
-            parseInt(getComputedStyle(itemElements[0]).marginRight);
-
-        const containerWidth = slider.parentElement.offsetWidth;
-        const centerX = containerWidth / 2;
-
+        // Подготовка слайдера с полным списком items (все предметы)
         const loopCount = 20;
         slider.innerHTML = "";
         for (let i = 0; i < loopCount; i++) {
@@ -152,24 +145,37 @@ async function spin() {
             });
         }
 
+        const itemElements = slider.querySelectorAll(".item");
+        // Размер одного элемента с учётом margin
+        const itemWidth = itemElements[0].offsetWidth +
+            parseInt(getComputedStyle(itemElements[0]).marginLeft) +
+            parseInt(getComputedStyle(itemElements[0]).marginRight);
+
+        const containerWidth = slider.parentElement.offsetWidth;
+        const centerX = containerWidth / 2;
+
+        // Вычисляем финальный индекс прокрутки с учётом количества циклов
         const finalIndex = items.length * (loopCount - 1) + index;
+        // Смещение для центрирования выбранного предмета
         const offset = finalIndex * itemWidth - centerX + itemWidth / 2;
 
-        const allItemElements = slider.querySelectorAll(".item");
-        allItemElements.forEach(el => el.classList.remove("selected", "dimmed"));
+        // Убираем выделения и затемняем все
+        itemElements.forEach(el => el.classList.remove("selected", "dimmed"));
 
         slider.style.transition = "none";
         slider.style.transform = `translateX(0)`;
 
+        // Запускаем анимацию прокрутки
         requestAnimationFrame(() => {
             slider.style.transition = "transform 5s cubic-bezier(0.25, 0.1, 0.25, 1)";
             slider.style.transform = `translateX(-${offset}px)`;
         });
 
+        // По окончании анимации выделяем выбранный предмет
         slider.addEventListener("transitionend", async function handler() {
             slider.removeEventListener("transitionend", handler);
 
-            allItemElements.forEach((el, i) => {
+            itemElements.forEach((el, i) => {
                 if (i === finalIndex) {
                     el.classList.add("selected");
                 } else {
@@ -180,8 +186,12 @@ async function spin() {
             await new Promise(resolve => setTimeout(resolve, 2000));
 
             showResult(selectedItem);
+
             isSpinning = false;
+            spinBtn.disabled = false;
+            spinBtn.classList.remove("disabled");
         });
+
     } catch (e) {
         alert("Ошибка: " + e.message);
         isSpinning = false;
@@ -189,6 +199,7 @@ async function spin() {
         spinBtn.classList.remove("disabled");
     }
 }
+
 
 function showResult(item) {
     // Скрываем слайдер
