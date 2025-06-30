@@ -24,8 +24,8 @@ cd env/Scripts && activate && cd ../../
 pip install -r requirements.txt
 ```
 
-4. Развернуть FastAPI сервер
+4. Развернуть FastAPI сервер и запустить ТГ бота
 
 ```
-uvicorn main:app
+python run.py
 ```
