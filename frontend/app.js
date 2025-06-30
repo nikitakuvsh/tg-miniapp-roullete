@@ -139,7 +139,7 @@ async function spin() {
                     <div class="image-container">
                         <img src="${item.photo_url}" alt="${item.name}" />
                     </div>
-                    <div class="item-name">${item.name.toUpperCase()}</div>
+                    <div class="item-name">${shortenName(item.name.toUpperCase())}</div>
                     <div class="item-probability">Вероятность получения — ${(item.probability * 100).toFixed(1)}%</div>
                 `;
                 slider.appendChild(div);
