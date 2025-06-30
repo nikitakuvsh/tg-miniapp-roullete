@@ -257,31 +257,41 @@ function showResult(item) {
       <div id="email-message"></div>
     `;
 
-    // Обработчик формы
     document.getElementById("email-form").addEventListener("submit", async (e) => {
         e.preventDefault();
         const email = document.getElementById("email").value;
-
+        const btn = e.target.querySelector("button.get-promo");
+      
+        // Отключаем кнопку и добавляем загрузку
+        btn.disabled = true;
+        const originalText = btn.textContent;
+        btn.innerHTML = `<span class="btn-loader"></span> Отправка...`;
+      
         try {
-            const resp = await fetch(`${BACKEND_API}/claim`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ chat_id: userId, email }),
-            });
-            if (!resp.ok) {
-                const err = await resp.json();
-                throw new Error(err.detail || "Ошибка при отправке промокода");
-            }
-            const data = await resp.json();
-
-            document.getElementById("email-message").innerHTML =
-                `<p style="margin-top: 5px">Промокод успешно выслан на <strong>${email}</strong></p>`;
-            document.getElementById("email-form").remove();
+          const resp = await fetch(`${BACKEND_API}/claim`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ chat_id: userId, email }),
+          });
+      
+          if (!resp.ok) {
+            const err = await resp.json();
+            throw new Error(err.detail || "Ошибка при отправке промокода");
+          }
+          const data = await resp.json();
+      
+          document.getElementById("email-message").innerHTML =
+            `<p style="margin-top: 5px">Промокод успешно выслан на <strong>${email}</strong></p>`;
+          document.getElementById("email-form").remove();
         } catch (e) {
-            document.getElementById("email-message").innerHTML =
-                `<p style="color:red;">Ошибка: ${e.message}</p>`;
+          document.getElementById("email-message").innerHTML =
+            `<p style="color:red;">Ошибка: ${e.message}</p>`;
+      
+          // В случае ошибки возвращаем кнопку в исходное состояние
+          btn.disabled = false;
+          btn.textContent = originalText;
         }
-    });
+      });
 }
 
 spinBtn.addEventListener("click", spin);
