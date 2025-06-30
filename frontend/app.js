@@ -120,11 +120,8 @@ async function spin() {
         // Найти предмет в items по item_id из backend
         let selectedItem = items.find(i => i.id === data.item_id);
 
-        // Если предмет не найден или quantity = 0 — выбрать первый доступный вручную
-        if (!selectedItem || selectedItem.quantity === 0) {
-            selectedItem = items.find(i => i.quantity > 0);
-            if (!selectedItem) throw new Error("Нет доступных призов");
-        }
+        // Если предмет не найден или quantity = 0 — выбрать первый доступный вручную   
+        if (!selectedItem) throw new Error("Нет доступных призов");
 
         // Здесь запускаем анимацию прокрутки, как у тебя было, с selectedItem и index
         // Копируем твою анимацию:
