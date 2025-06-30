@@ -247,8 +247,8 @@ function showResult(item) {
         <div class="image-container">
           <img src="${item.photo_url}" alt="${item.name}" />
         </div>
-        <div class="item-name">${item.name.toUpperCase()}</div>
-        <p class="item-probability">Вероятность получения — ${(item.probability * 100).toFixed(1)}%</p>
+        <div class="item-name result">${item.name.toUpperCase()}</div>
+        <p class="item-probability result">Вероятность получения — ${(item.probability * 100).toFixed(1)}%</p>
       </div>
       <form id="email-form">
         <input class="email-input" type="email" id="email" placeholder="E-mail" required />

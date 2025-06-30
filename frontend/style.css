@@ -78,6 +78,9 @@ body {
     margin-bottom: 2px;
 }
 
+.item-name.result,
+.item-probability.result {text-align: center;}
+
 .indicator-line {
     position: absolute;
     top: 0;
@@ -145,9 +148,7 @@ button#spin-btn.disabled {
 }
 
 .item.selected.result,
-.item.selected.result .image-container,
-.item-name,
-.item-probability {
+.item.selected.result .image-container {
     max-width: max-content;
     margin: auto;
 }
