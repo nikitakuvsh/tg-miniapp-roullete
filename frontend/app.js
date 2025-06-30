@@ -88,16 +88,6 @@ async function fetchItems() {
     spinBtn.disabled = false;
 }
 
-function getRandomItem() {
-    const rand = Math.random();
-    let sum = 0;
-    for (const item of items) {
-        sum += item.probability;
-        if (rand <= sum) return item;
-    }
-    return items[items.length - 1];
-}
-
 let isSpinning = false;
 
 async function spin() {
@@ -118,20 +108,23 @@ async function spin() {
 
         const data = await resp.json();
 
-        // Ищем выбранный предмет в полном списке (включая с quantity=0)
-        let selectedItem = items.find(i => i.id === data.item_id);
+        // Фильтруем доступные призы с quantity > 0
+        const availableItems = items.filter(i => i.quantity > 0);
 
-        // Если вдруг не нашли, для безопасности — берём первый предмет
-        if (!selectedItem) selectedItem = items[0];
+        // Ищем выбранный предмет в доступных призах
+        let selectedItem = availableItems.find(i => i.id === data.item_id);
 
-        // Индекс выбранного предмета в полном списке (важно!)
-        const index = items.findIndex(i => i.id === selectedItem.id);
+        // Если вдруг не нашли, для безопасности — берём первый доступный предмет
+        if (!selectedItem) selectedItem = availableItems[0];
 
-        // Подготовка слайдера с полным списком items (все предметы)
+        // Индекс выбранного предмета в списке доступных призов
+        const index = availableItems.findIndex(i => i.id === selectedItem.id);
+
+        // Подготовка слайдера с доступными призами
         const loopCount = 20;
         slider.innerHTML = "";
         for (let i = 0; i < loopCount; i++) {
-            items.forEach(item => {
+            availableItems.forEach(item => {
                 const div = document.createElement("div");
                 div.className = "item";
                 div.innerHTML = `
@@ -155,7 +148,8 @@ async function spin() {
         const centerX = containerWidth / 2;
 
         // Вычисляем финальный индекс прокрутки с учётом количества циклов
-        const finalIndex = items.length * (loopCount - 1) + index;
+        const finalIndex = availableItems.length * (loopCount - 1) + index;
+
         // Смещение для центрирования выбранного предмета
         const offset = finalIndex * itemWidth - centerX + itemWidth / 2;
 
@@ -199,7 +193,6 @@ async function spin() {
         spinBtn.classList.remove("disabled");
     }
 }
-
 
 function showResult(item) {
     // Скрываем слайдер

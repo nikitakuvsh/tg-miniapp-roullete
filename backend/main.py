@@ -86,7 +86,7 @@ async def spin(data: SpinRequest):
             return {"already_spun": True, "item_id": row["item_id"]}
 
         # Получаем только призы с quantity > 0
-        items = await conn.fetch("SELECT id, probability FROM items")
+        items = await conn.fetch("SELECT id, probability FROM items WHERE quantity > 0")
         if not items:
             raise HTTPException(status_code=404, detail="Нет доступных призов")
 
