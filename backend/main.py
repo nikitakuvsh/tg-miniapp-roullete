@@ -62,7 +62,9 @@ def generate_promo_code(length=8):
 async def get_items():
     pool = await get_pool()
     async with pool.acquire() as conn:
-        rows = await conn.fetch("SELECT id, name, probability, price, photo_url FROM items")
+        rows = await conn.fetch(
+            "SELECT id, name, probability, price, photo_url, quantity FROM items"
+        )
         return [dict(row) for row in rows]
     
 #Проверка крутил ли уже пользователь или нет    
@@ -85,15 +87,15 @@ async def spin(data: SpinRequest):
         if row:
             return {"already_spun": True, "item_id": row["item_id"]}
 
-        # Получаем все призы
-        items = await conn.fetch("SELECT id, probability FROM items")
+        # Получаем только призы с quantity > 0
+        items = await conn.fetch("SELECT id, probability FROM items WHERE quantity > 0")
         if not items:
-            raise HTTPException(status_code=404, detail="Items not found")
+            raise HTTPException(status_code=404, detail="Нет доступных призов")
 
         # Случайный выбор приза по вероятности
         rand = random.random()
         acc = 0.0
-        chosen_id = items[-1]["id"]  # на всякий случай последний
+        chosen_id = items[-1]["id"]  # fallback — последний приз
         for item in items:
             acc += item["probability"]
             if rand <= acc:
