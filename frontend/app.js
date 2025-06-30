@@ -2,6 +2,8 @@ let items = [];
 const resultDiv = document.getElementById("result");
 const spinBtn = document.getElementById("spin-btn");
 const slider = document.getElementById("items-slider");
+const link = document.querySelector(".under-slider__link");
+link.style.display = "none";
 const BACKEND_API = window.BACKEND_API || "http://localhost:8000";
 
 let tg = window.Telegram.WebApp;
@@ -47,9 +49,7 @@ function shortenName(name) {
 async function fetchItems() {
     const loader = document.getElementById("loader");
     const sliderContainer = document.querySelector(".slider-container");
-    const link = document.querySelector(".under-slider__link");
 
-    link.style.display = "none";
     loader.style.display = "block";
     slider.innerHTML = "";
     sliderContainer.style.display = "none";
