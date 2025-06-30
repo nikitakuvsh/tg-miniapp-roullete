@@ -49,11 +49,11 @@ async function fetchItems() {
     const sliderContainer = document.querySelector(".slider-container");
     const link = document.querySelector(".under-slider__link");
 
+    link.style.display = "none";
     loader.style.display = "block";
     slider.innerHTML = "";
     sliderContainer.style.display = "none";
     spinBtn.style.display = "none";
-    link.style.display = "none";
 
     items = await (await fetch(`${BACKEND_API}/items`)).json();
 
