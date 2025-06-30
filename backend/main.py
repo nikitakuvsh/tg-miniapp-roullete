@@ -86,7 +86,7 @@ async def spin(data: SpinRequest):
             return {"already_spun": True, "item_id": row["item_id"]}
 
         # Получаем только призы с quantity > 0
-        items = await conn.fetch("SELECT id, probability FROM items WHERE quantity > 0")
+        items = await conn.fetch("SELECT id, probability FROM items")
         if not items:
             raise HTTPException(status_code=404, detail="Нет доступных призов")
 
@@ -131,6 +131,12 @@ async def claim(data: ClaimRequest):
             # Уменьшаем quantity на 1
             await conn.execute(
                 "UPDATE items SET quantity = quantity - 1 WHERE id = $1 AND quantity > 0",
+                item_id
+            )
+
+            # Устанавливаем probability = 0, если quantity стало 0
+            await conn.execute(
+                "UPDATE items SET probability = 0 WHERE id = $1 AND quantity = 0",
                 item_id
             )
 
