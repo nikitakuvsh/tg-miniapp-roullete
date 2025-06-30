@@ -37,6 +37,13 @@ async function checkSpin() {
     }
 }
 
+function shortenName(name) {
+    if (name.length > 15) {
+        return name.slice(0, 12) + '...';
+    }
+    return name;
+}
+
 async function fetchItems() {
     const loader = document.getElementById("loader");
     const sliderContainer = document.querySelector(".slider-container");
@@ -65,7 +72,7 @@ async function fetchItems() {
         <div class="image-container">
           <img src="${item.photo_url}" alt="${item.name}" />
         </div>
-        <div class="item-name">${item.name.toUpperCase()}</div>
+        <div class="item-name">${shortenName(item.name).toUpperCase()}</div>
         <div class="item-probability">Вероятность получения — ${(item.probability * 100).toFixed(1)}%</div>
       `;
 
@@ -87,6 +94,7 @@ async function fetchItems() {
     spinBtn.innerHTML = originalBtnContent;
     spinBtn.disabled = false;
 }
+
 
 let isSpinning = false;
 
