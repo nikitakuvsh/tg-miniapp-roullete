@@ -79,7 +79,10 @@ body {
 }
 
 .item-name.result,
-.item-probability.result {text-align: center;}
+.item-probability.result {
+    text-align: center;
+    width: 100%;
+}
 
 .indicator-line {
     position: absolute;
