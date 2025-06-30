@@ -138,11 +138,27 @@ async function spin() {
             });
         }
 
+        // Ждем, пока все изображения загрузятся, чтобы корректно измерить размеры
+        const imgs = slider.querySelectorAll("img");
+        await Promise.all(Array.from(imgs).map(img => {
+            return new Promise(resolve => {
+                if (img.complete) {
+                    resolve();
+                } else {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                }
+            });
+        }));
+
         const itemElements = slider.querySelectorAll(".item");
+        if (itemElements.length === 0) throw new Error("Нет элементов для показа");
+
         // Размер одного элемента с учётом margin
+        const style = getComputedStyle(itemElements[0]);
         const itemWidth = itemElements[0].offsetWidth +
-            parseInt(getComputedStyle(itemElements[0]).marginLeft) +
-            parseInt(getComputedStyle(itemElements[0]).marginRight);
+            parseFloat(style.marginLeft) +
+            parseFloat(style.marginRight);
 
         const containerWidth = slider.parentElement.offsetWidth;
         const centerX = containerWidth / 2;
@@ -156,16 +172,21 @@ async function spin() {
         // Убираем выделения и затемняем все
         itemElements.forEach(el => el.classList.remove("selected", "dimmed"));
 
+        // Сброс трансформации для корректного старта
         slider.style.transition = "none";
         slider.style.transform = `translateX(0)`;
 
-        // Запускаем анимацию прокрутки
-        requestAnimationFrame(() => {
-            slider.style.transition = "transform 5s cubic-bezier(0.25, 0.1, 0.25, 1)";
-            slider.style.transform = `translateX(-${offset}px)`;
-        });
+        // Даем браузеру прогрузить стиль перед анимацией
+        await new Promise(r => requestAnimationFrame(r));
 
-        // По окончании анимации выделяем выбранный предмет
+        // Небольшая задержка для мобильных браузеров (устранение сбоев с расчетом)
+        await new Promise(r => setTimeout(r, 50));
+
+        // Запускаем анимацию прокрутки
+        slider.style.transition = "transform 5s cubic-bezier(0.25, 0.1, 0.25, 1)";
+        slider.style.transform = `translateX(-${offset}px)`;
+
+        // Обработчик окончания анимации
         slider.addEventListener("transitionend", async function handler() {
             slider.removeEventListener("transitionend", handler);
 
@@ -177,6 +198,7 @@ async function spin() {
                 }
             });
 
+            // Пауза перед показом результата
             await new Promise(resolve => setTimeout(resolve, 2000));
 
             showResult(selectedItem);
