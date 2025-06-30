@@ -47,11 +47,13 @@ function shortenName(name) {
 async function fetchItems() {
     const loader = document.getElementById("loader");
     const sliderContainer = document.querySelector(".slider-container");
+    const link = document.querySelector(".under-slider__link");
 
     loader.style.display = "block";
     slider.innerHTML = "";
     sliderContainer.style.display = "none";
     spinBtn.style.display = "none";
+    link.style.display = "none";
 
     items = await (await fetch(`${BACKEND_API}/items`)).json();
 
@@ -84,6 +86,7 @@ async function fetchItems() {
     loader.style.display = "none";
     sliderContainer.style.display = "block";
     spinBtn.style.display = "block";
+    link.style.display = "block";
 
     const originalBtnContent = spinBtn.innerHTML;
     spinBtn.disabled = true;
