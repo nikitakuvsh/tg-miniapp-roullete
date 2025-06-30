@@ -57,15 +57,13 @@ def generate_promo_code(length=8):
     chars = string.ascii_uppercase + string.digits
     return ''.join(secrets.choice(chars) for _ in range(length))
 
-# Получить все доступные предметы
 @app.get("/items")
 async def get_items():
     pool = await get_pool()
     async with pool.acquire() as conn:
-        rows = await conn.fetch(
-            "SELECT id, name, probability, price, photo_url, quantity FROM items"
-        )
+        rows = await conn.fetch("SELECT * FROM items ORDER BY id")  # важно!
         return [dict(row) for row in rows]
+
     
 #Проверка крутил ли уже пользователь или нет    
 @app.get("/has_spun")
@@ -119,34 +117,48 @@ async def claim(data: ClaimRequest):
         if not row:
             raise HTTPException(status_code=400, detail="Вы ещё не крутили рулетку")
 
-        item_name = await conn.fetchval("SELECT name FROM items WHERE id=$1", row["item_id"])
+        item_id = row["item_id"]
+        item_name = await conn.fetchval("SELECT name FROM items WHERE id=$1", item_id)
         if not item_name:
             raise HTTPException(status_code=404, detail="Приз не найден")
 
         promo_code = row["promo_code"]
 
-        # Если промокод ещё не создан — создаём новый и обновляем базу
+        # Если не был еще claimed — уменьшаем количество и обновляем запись
         if not row["claimed"] or not promo_code:
             promo_code = generate_promo_code()
+
+            # Уменьшаем quantity на 1
+            await conn.execute(
+                "UPDATE items SET quantity = quantity - 1 WHERE id = $1 AND quantity > 0",
+                item_id
+            )
+
+            # Обновляем user_prizes
             await conn.execute(
                 "UPDATE user_prizes SET email=$1, promo_code=$2, claimed=TRUE WHERE chat_id=$3",
                 data.email, promo_code, data.chat_id
             )
         else:
-            # Обновим email, если он отличается (чтобы отправлять на актуальный)
+            # Просто обновляем email, если он изменился
             if data.email != row["email"]:
                 await conn.execute(
                     "UPDATE user_prizes SET email=$1 WHERE chat_id=$2",
                     data.email, data.chat_id
                 )
 
-        # Отправляем промокод по почте (в любом случае)
+        # Пытаемся отправить письмо
         try:
             await send_promo_code_email(data.email, promo_code, item_name)
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Не удалось отправить email: {e}")
 
-        return {"message": "Промокод отправлен", "item_name": item_name, "promo_code": promo_code}
+        return {
+            "message": "Промокод отправлен",
+            "item_name": item_name,
+            "promo_code": promo_code
+        }
+
 
 @app.get("/ping")
 def ping():
