@@ -11,7 +11,8 @@ import logging
 import asyncio
 
 TELEGRAM_BOT_TOKEN = "8039605779:AAEm7vfc1eNRw5z9mDoPLSXa3no7W_r0Zh8"
-WEB_APP_URL = "https://tg-miniapp-roullete.netlify.app/"
+#WEB_APP_URL = "http://80.93.187.149:8080/"
+WEB_APP_URL = "https://tg-miniapp-roullete.netlify.app"
 
 logging.basicConfig(level=logging.INFO)
 

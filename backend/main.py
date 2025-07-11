@@ -24,7 +24,7 @@ app.add_middleware(
 )
 
 # Строка подключения к PostgreSQL (твоя)
-DATABASE_URL = "postgresql://tg_miniapp_roullete_bd_user:nyilaFOrUBtbQf3ybR3jRczDNwhB04PZ@dpg-d1e7rveuk2gs73adr1p0-a.oregon-postgres.render.com:5432/tg_miniapp_roullete_bd"
+DATABASE_URL = "postgresql://postgres:2gecf232gecf2@localhost:5432/roullete"
 
 # Создаём пул соединений один раз при старте
 @app.on_event("startup")
